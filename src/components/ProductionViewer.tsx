@@ -3,6 +3,8 @@ import { Canvas, useThree } from '@react-three/fiber'
 import { OrbitControls, useGLTF, Environment } from '@react-three/drei'
 import { PerspectiveCamera, PCFSoftShadowMap, PCFShadowMap, BasicShadowMap, ReinhardToneMapping, LinearToneMapping, NoToneMapping, ACESFilmicToneMapping, NeutralToneMapping } from 'three'
 
+import { useScrollAnimation } from '../hooks/useScrollAnimation'
+
 function Model({ url, position, rotation, scale, shadowsEnabled }: { url: string, position: [number, number, number], rotation: [number, number, number], scale: [number, number, number], shadowsEnabled: boolean }) {
   const gltf = useGLTF(url)
 
@@ -23,6 +25,11 @@ function Model({ url, position, rotation, scale, shadowsEnabled }: { url: string
 function Scene() {
   const { camera, scene, gl } = useThree()
   const dirLightRef = useRef<any>(null)
+  const controlsRef = useRef<any>(null)
+  const buildingRef = useRef<any>(null)
+  const cameraRef = useRef<any>(null)
+
+  useEffect(() => { cameraRef.current = camera }, [camera])
   
   // Hardcoded defaults from BuildingViewer
   const config = {
@@ -53,6 +60,14 @@ function Scene() {
     cameraTarget: [-18.6, 20.9, 0] as [number, number, number],
     fov: 23
   }
+
+  useScrollAnimation({
+    interactive: false,
+    cameraRef,
+    buildingRef,
+    controlsRef,
+    enabled: true
+  })
 
   // Initial camera setup
   useEffect(() => {
@@ -143,6 +158,7 @@ function Scene() {
       </Suspense>
       
       <OrbitControls 
+        ref={controlsRef}
         target={config.cameraTarget}
         enableDamping={false}
         dampingFactor={0.05}
